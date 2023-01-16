@@ -1,5 +1,17 @@
 # SISTEMA FORNO	
 
+# O resistor de potência e a ventoinha estão ambos ligados às portas GPIO e são acionados através do circuito de potência
+# Resistor: GPIO 23
+# Ventoinha: GPIO 24
+# testar o resistor ligar por 10 segundos
+
+from gpiozero import OutputDevice
+
+
+resistor = OutputDevice(23)
+ventoinha = OutputDevice(24)
+
+
 #VARIAVEIS
 ligado = False
 modo_curva_temperatura = False
@@ -31,7 +43,7 @@ def desliga():
 
 
 #MAIN_LOOP
-while True:
+while 1 == 4:
 	print("Bem vindo ao forno")
 	print("1 - Ligar forno")
 	print("2 - Desligar forno")
@@ -48,3 +60,9 @@ while True:
 
 	if op == '3':
 		estado(ligado)
+
+
+resistor.on()
+sleep(10)
+resistor.off()
+sleep(1)

@@ -1,22 +1,23 @@
 import smbus2
 import bme280
 
-port = 1
-address = 0x76
-bus = smbus2.SMBus(port)
 
-calibration_params = bme280.load_calibration_params(bus, address)
+class LeitorTemperaturaExterna:
 
-# the sample method will take a single reading and return a
-# compensated_reading object
-data = bme280.sample(bus, address, calibration_params)
+    def __init__(self):
+        self.port = 1
+        self.address = 0x76
+        self.bus = smbus2.SMBus(self.port)
+        self.calibration_params = bme280.load_calibration_params(self.bus, self.address)
+        self.data = bme280.sample(self.bus, self.address, self.calibration_params)
 
-# the compensated_reading class has the following attributes
-print(data.id)
-print(data.timestamp)
-print(data.temperature)
-print(data.pressure)
-print(data.humidity)
+    def show_full_sensor_data(self):
+        print(self.data.id)
+        print(self.data.timestamp)
+        print(self.data.temperature)
+        print(self.data.pressure)
+        print(self.data.humidity)
 
-# there is a handy string representation too
-print(data)
+    def get_external_temperature(self):
+        self.data = bme280.sample(self.bus, self.address, self.calibration_params)
+        return self.data.temperature

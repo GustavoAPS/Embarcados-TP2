@@ -26,7 +26,7 @@ class UartCommunicator:
             m2 = calcula_CRC(m1, tamanho).to_bytes(2, 'little')
             msg = m1 + m2
             self.serial_port.write(msg)
-            print("Message sent")
+            #print("Message sent")
         else:
             print("Failed to send message")
 
@@ -42,7 +42,7 @@ class UartCommunicator:
             crc16_calculado = calcula_CRC(buffer[0:7], 7).to_bytes(2, 'little')
 
             if crc16_recebido == crc16_calculado:
-                print('Mensagem recebida: {}'.format(buffer))
+                #print('Mensagem recebida: {}'.format(buffer))
                 return data
             else:
                 print('Mensagem recebida: {}'.format(buffer))

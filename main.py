@@ -64,20 +64,18 @@ def watch_for_buttons():
 		communicator.send_code(request_buttons_code)
 		data_received = communicator.message_receiver()
 
-		if data_received:
+		if data_received is not None:
 
 			button = int.from_bytes(data_received, 'little')
 
-			if button == 1:
+			if button == 161:
 				print("[1] pressed")
-			elif button == 2:
+			elif button == 162:
 				print("[2] pressed")
-			elif button == 3:
+			elif button == 163:
 				print("[3] pressed")
-			elif button == 4:
+			elif button == 164:
 				print("[4] pressed")
-			elif button == 5:
-				print("[5] pressed")
 
 		time.sleep(0.5)
 

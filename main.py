@@ -1,5 +1,6 @@
 # SISTEMA FORNO
 import temperatura
+import log_manager
 
 # O resistor de potência e a ventoinha estão ambos ligados às portas GPIO e são acionados através do circuito de potência
 # Resistor: GPIO 23
@@ -21,6 +22,7 @@ temperatura_referencia = 9999
 temperatura_interna = 9999
 
 leitor_temperatura_externa = temperatura.LeitorTemperaturaExterna()
+log = log_manager.LogManager()
 
 #FUNCOES
 def estado(ligado):
@@ -66,7 +68,9 @@ while True:
 		estado(ligado)
 
 	if op == '4':
-		print(leitor_temperatura_externa.get_external_temperature())
+		external_temperature = leitor_temperatura_externa.get_external_temperature()
+		print(external_temperature)
+		log.create_log_entry(external_temperature)
 
 #resistor.on()
 #sleep(10)

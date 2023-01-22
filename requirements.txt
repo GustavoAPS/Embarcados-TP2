@@ -1,4 +1,4 @@
 pyserial
 rpi_lcd
 smbus2
-bme280
+rpi.bme280

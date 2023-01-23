@@ -1,9 +1,9 @@
 # SISTEMA FORNO
 
-#PYTHON LIBRARIES IMPORTS
+# PYTHON LIBRARIES IMPORTS
 import time
 
-#CUSTOM LIBRARIES
+# CUSTOM LIBRARIES
 import temperatura
 import log_manager
 import uart_communicator
@@ -13,102 +13,109 @@ import uart_communicator
 # Ventoinha: GPIO 24
 # testar o resistor ligar por 10 segundos
 
-#Esse modulo pode ir para outro arquivo
+# Esse modulo pode ir para outro arquivo
 from gpiozero import OutputDevice
 from threading import Event, Thread
 
 resistor = OutputDevice(23)
 ventoinha = OutputDevice(24)
 
-
-#VARIAVEIS FORNO
-ligado = False
-modo_curva_temperatura = False
+# ----------------------------------------------------- #
+# OVEN VARIABLES
+# it can be on hearing commands and working
+# to work it needs to be on
+oven_is_on = False
+working = False
+temperature_curve_mode = False
 temperatura_externa = 9999
 temperatura_referencia = 9999
 temperatura_interna = 9999
 
-#IMPORTS DOS MODULOS LOCAIS
+# IMPORTED OBJECTS
 leitor_temperatura_externa = temperatura.LeitorTemperaturaExterna()
 log = log_manager.LogManager()
 communicator = uart_communicator.UartCommunicator()
 
-#FUNCOES
-def estado(ligado):
-	print("\n")
-	print("Temperatura externa: " + str(temperatura_externa))
-	print("Temperatura interna: " + str(temperatura_interna))
-	
-	if ligado:
-		print("Forno ligado")
 
-	else:
-		print("Forno desligado")
-	print("\n")
+def turn_on(oven_is_on_state):
+    oven_is_on_state = True
+    print("Oven set on")
 
-def liga():
-	print("Ligando forno")
-	# liga o led_1 de power
+    turn_on_code = b'\x01\x23\xd3'
+    communicator.send_code(turn_on_code, b'\xA1', 8)
+    data_received = communicator.message_receiver()
+    received_int = int.from_bytes(data_received, 'little')
+    print(received_int)
 
 
-def desliga():
-	print("Desligando forno")
-	# desliga o led_1 de power
+def turn_off(oven_is_on_state):
+    oven_is_on_state = False
+    print("Oven set off")
+
+    turn_off_code = b'\x01\x23\xd3'
+    communicator.send_code(turn_off_code, b'\xA2', 8)
+    data_received = communicator.message_receiver()
+    received_int = int.from_bytes(data_received, 'little')
+    print(received_int)
+
+
+# desliga o led_1 de power
 
 
 def watch_for_buttons():
+    while True:
 
-	while True:
+        request_buttons_code = b'\x01\x23\xc3'
+        communicator.send_code(request_buttons_code)
+        data_received = communicator.message_receiver()
 
-		request_buttons_code = b'\x01\x23\xc3'
-		communicator.send_code(request_buttons_code)
-		data_received = communicator.message_receiver()
+        if data_received is not None:
 
-		if data_received is not None:
+            button = int.from_bytes(data_received, 'little')
 
-			button = int.from_bytes(data_received, 'little')
+            if button == 161:
+                print("[1] pressed")
+                turn_on(oven_is_on)
+            elif button == 162:
+                print("[2] pressed")
+                turn_off(oven_is_on)
+            elif button == 163:
+                print("[3] pressed")
+            elif button == 164:
+                print("[4] pressed")
 
-			if button == 161:
-				print("[1] pressed")
-			elif button == 162:
-				print("[2] pressed")
-			elif button == 163:
-				print("[3] pressed")
-			elif button == 164:
-				print("[4] pressed")
-
-		time.sleep(0.5)
+        time.sleep(0.5)
 
 
 thread_buttons_observer = Thread(target=watch_for_buttons, args=())
 thread_buttons_observer.start()
 
-#MAIN_LOOP
+# MAIN_LOOP
 while True:
-	print("Bem vindo ao forno")
-	print("1 - Ligar forno")
-	print("2 - Desligar forno")
-	print("3 - Apresenta estado do forno")
-	print("4 - Apresenta temperatura externa")
-	op = input()
+    print("Bem vindo ao forno")
+    print("1 - Ligar forno")
+    print("2 - Desligar forno")
+    print("3 - Apresenta estado do forno")
+    print("4 - Apresenta temperatura externa")
+    op = input()
 
-	if op == '1':
-		ligado = True
-		liga()
+    if op == '1':
+        pass
 
-	if op == '2':
-		ligado = False
-		desliga()
 
-	if op == '3':
-		estado(ligado)
+    if op == '2':
+        pass
 
-	if op == '4':
-		external_temperature = leitor_temperatura_externa.get_external_temperature()
-		print(external_temperature)
-		log.create_log_entry(external_temperature)
 
-#resistor.on()
-#sleep(10)
-#resistor.off()
-#sleep(1)
+    if op == '3':
+        pass
+
+    if op == '4':
+        external_temperature = leitor_temperatura_externa.get_external_temperature()
+        print(external_temperature)
+        log.create_log_entry(external_temperature)
+
+# resistor.on()
+# sleep(10)
+# resistor.off()
+# sleep(1)

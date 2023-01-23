@@ -98,11 +98,17 @@ def read_and_update_temperature_target():
     communicator.send_code(request_temperature_target_code)
     data_received = communicator.message_receiver()
     temp = struct.unpack('f', data_received)[0]
-    print(temp)
+    print("Target Temperature - " + str(temp))
 
 
 def read_and_update_oven_temperature():
-    pass
+
+    request_oven_temperature_code = b'\x01\x23\xc1'
+    communicator.send_code(request_oven_temperature_code)
+    data_received = communicator.message_receiver()
+    temp = struct.unpack('f', data_received)[0]
+    print("Oven temperature - " + str(temp))
+
 
 
 def system_update_routine():

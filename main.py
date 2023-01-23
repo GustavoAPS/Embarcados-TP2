@@ -51,7 +51,7 @@ def start_work():
 def stop_work():
     print("Oven stop working")
     turn_on_code = b'\x01\x23\xd5'
-    communicator.send_code(turn_on_code, b'\x01', 8)
+    communicator.send_code(turn_on_code, b'\x00', 8)
     data_received = communicator.message_receiver()
     received_int = int.from_bytes(data_received, 'little')
     print(received_int)

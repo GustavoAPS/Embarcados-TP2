@@ -58,14 +58,10 @@ def stop_work():
 
 
 def send_control_signal(signal_intensity):
-    sending_block = Event()
-    send_control_signal_code = b'\x01\x23\xd1'
+    send_control_signal_code = b'\x01\x16\xd1'
     valor = (round(signal_intensity)).to_bytes(4, 'little', signed=True)
-
     communicator.send_code(send_control_signal_code, valor, 11)
     data_received = communicator.message_receiver()
-
-    sending_block.clear()
 
 
 def watch_for_buttons(oven):

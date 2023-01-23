@@ -1,45 +1,26 @@
-# SISTEMA FORNO
+# OVEN SYSTEM
 
-# PYTHON LIBRARIES IMPORTS
+# PYTHON LIBRARIES
 import time
 import struct
+from threading import Thread
 
 # CUSTOM LIBRARIES
 import temperatura
 import log_manager
 import uart_communicator
-
-# O resistor de potência e a ventoinha estão ambos ligados às portas GPIO e são acionados através do circuito de potência
-# Resistor: GPIO 23
-# Ventoinha: GPIO 24
-# testar o resistor ligar por 10 segundos
-
-# Esse modulo pode ir para outro arquivo
-from gpiozero import OutputDevice
-from threading import Event, Thread
-
-resistor = OutputDevice(23)
-ventoinha = OutputDevice(24)
-
-# ----------------------------------------------------- #
-# OVEN VARIABLES
-# it can be on hearing commands and working
-# to work it needs to be on
-oven_is_on = False
-working = False
-temperature_curve_mode = False
-outside_temperature = 9999
-oven_temperature_target = 9999
-internal_temperature = 9999
+import reflow_oven
+import pid_control
 
 # IMPORTED OBJECTS
+pid = pid_control.PID()
 leitor_temperatura_externa = temperatura.LeitorTemperaturaExterna()
 log = log_manager.LogManager()
 communicator = uart_communicator.UartCommunicator()
 
 
-def turn_on(oven_is_on_state):
-    oven_is_on_state = True
+def turn_on():
+
     print("Oven set on")
 
     turn_on_code = b'\x01\x23\xd3'
@@ -49,8 +30,8 @@ def turn_on(oven_is_on_state):
     print(received_int)
 
 
-def turn_off(oven_is_on_state):
-    oven_is_on_state = False
+def turn_off():
+
     print("Oven set off")
 
     turn_off_code = b'\x01\x23\xd3'
@@ -68,7 +49,7 @@ def stop_work():
     pass
 
 
-def watch_for_buttons():
+def watch_for_buttons(oven):
 
     request_buttons_code = b'\x01\x23\xc3'
     communicator.send_code(request_buttons_code)
@@ -80,10 +61,11 @@ def watch_for_buttons():
 
         if button == 161:
             print("[1] pressed")
-            turn_on(oven_is_on)
+            oven.on = True
+            turn_on()
         elif button == 162:
             print("[2] pressed")
-            turn_off(oven_is_on)
+            oven.on = False
         elif button == 163:
             print("[3] pressed")
         elif button == 164:
@@ -92,62 +74,37 @@ def watch_for_buttons():
     time.sleep(0.5)
 
 
-def read_and_update_temperature_target():
+def read_and_update_temperature_target(oven):
 
     request_temperature_target_code = b'\x01\x23\xc2'
     communicator.send_code(request_temperature_target_code)
     data_received = communicator.message_receiver()
     temp = struct.unpack('f', data_received)[0]
+    oven.oven_temperature_target = temp
     print("Target Temperature - " + str(temp))
 
 
-def read_and_update_oven_temperature():
+def read_and_update_oven_temperature(oven):
 
     request_oven_temperature_code = b'\x01\x23\xc1'
     communicator.send_code(request_oven_temperature_code)
     data_received = communicator.message_receiver()
     temp = struct.unpack('f', data_received)[0]
+    oven.internal_temperature = temp
     print("Oven temperature - " + str(temp))
 
 
-
 def system_update_routine():
+
+    oven = reflow_oven.ReflowOven()
+
     while True:
-        read_and_update_temperature_target()
-        watch_for_buttons()
-        read_and_update_oven_temperature()
-        watch_for_buttons()
+        read_and_update_temperature_target(oven)
+        watch_for_buttons(oven)
+        read_and_update_oven_temperature(oven)
+        watch_for_buttons(oven)
+        print(pid.output(oven.oven_temperature_target, oven.internal_temperature))
 
 
-thread_buttons_observer = Thread(target=system_update_routine, args=())
-thread_buttons_observer.start()
-
-# MAIN_LOOP
-while True:
-    print("Bem vindo ao forno")
-    print("1 - Ligar forno")
-    print("2 - Desligar forno")
-    print("3 - Apresenta estado do forno")
-    print("4 - Apresenta temperatura externa")
-    op = input()
-
-    if op == '1':
-        pass
-
-
-    if op == '2':
-        pass
-
-
-    if op == '3':
-        pass
-
-    if op == '4':
-        outside_temperature = leitor_temperatura_externa.get_external_temperature()
-        print(outside_temperature)
-        log.create_log_entry(outside_temperature)
-
-# resistor.on()
-# sleep(10)
-# resistor.off()
-# sleep(1)
+system_routine_thread = Thread(target=system_update_routine, args=())
+system_routine_thread.start()

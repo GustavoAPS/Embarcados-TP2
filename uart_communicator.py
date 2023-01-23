@@ -8,26 +8,18 @@ class UartCommunicator:
         self.serial_port = serial.Serial(port='/dev/serial0', baudrate=9600, timeout=1)
         self.matricula = [4, 9, 9, 2]
 
-    def check_connection(self):
-        if self.serial_port.isOpen():
-            print('connection established')
-            return True
-        else:
-            print('connection refused')
-            return False
-
     def close_connection(self):
         self.serial_port.close()
         print('connection closed')
 
     def send_code(self, command_code, valor=b'', tamanho=7):
-        if self.check_connection():
+        if self.serial_port.isOpen():
             m1 = command_code + bytes(self.matricula) + valor
             m2 = calcula_CRC(m1, tamanho).to_bytes(2, 'little')
             msg = m1 + m2
             self.serial_port.write(msg)
-            #print("Message sent")
         else:
+            print('connection refused')
             print("Failed to send message")
 
     def message_receiver(self):

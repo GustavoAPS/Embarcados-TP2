@@ -2,6 +2,7 @@
 
 # PYTHON LIBRARIES IMPORTS
 import time
+import struct
 
 # CUSTOM LIBRARIES
 import temperatura
@@ -27,9 +28,9 @@ ventoinha = OutputDevice(24)
 oven_is_on = False
 working = False
 temperature_curve_mode = False
-temperatura_externa = 9999
-temperatura_referencia = 9999
-temperatura_interna = 9999
+outside_temperature = 9999
+oven_temperature_target = 9999
+internal_temperature = 9999
 
 # IMPORTED OBJECTS
 leitor_temperatura_externa = temperatura.LeitorTemperaturaExterna()
@@ -59,35 +60,60 @@ def turn_off(oven_is_on_state):
     print(received_int)
 
 
-# desliga o led_1 de power
+def start_work():
+    pass
+
+
+def stop_work():
+    pass
 
 
 def watch_for_buttons():
+
+    request_buttons_code = b'\x01\x23\xc3'
+    communicator.send_code(request_buttons_code)
+    data_received = communicator.message_receiver()
+
+    if data_received is not None:
+
+        button = int.from_bytes(data_received, 'little')
+
+        if button == 161:
+            print("[1] pressed")
+            turn_on(oven_is_on)
+        elif button == 162:
+            print("[2] pressed")
+            turn_off(oven_is_on)
+        elif button == 163:
+            print("[3] pressed")
+        elif button == 164:
+            print("[4] pressed")
+
+    time.sleep(0.5)
+
+
+def read_and_update_temperature_target():
+
+    request_temperature_target_code = b'\x01\x23\xc2'
+    communicator.send_code(request_temperature_target_code)
+    data_received = communicator.message_receiver()
+    temp = struct.unpack('f', data_received)[0]
+    print(temp)
+
+
+def read_and_update_oven_temperature():
+    pass
+
+
+def system_update_routine():
     while True:
-
-        request_buttons_code = b'\x01\x23\xc3'
-        communicator.send_code(request_buttons_code)
-        data_received = communicator.message_receiver()
-
-        if data_received is not None:
-
-            button = int.from_bytes(data_received, 'little')
-
-            if button == 161:
-                print("[1] pressed")
-                turn_on(oven_is_on)
-            elif button == 162:
-                print("[2] pressed")
-                turn_off(oven_is_on)
-            elif button == 163:
-                print("[3] pressed")
-            elif button == 164:
-                print("[4] pressed")
-
-        time.sleep(0.5)
+        read_and_update_temperature_target()
+        watch_for_buttons()
+        read_and_update_oven_temperature()
+        watch_for_buttons()
 
 
-thread_buttons_observer = Thread(target=watch_for_buttons, args=())
+thread_buttons_observer = Thread(target=system_update_routine, args=())
 thread_buttons_observer.start()
 
 # MAIN_LOOP
@@ -111,9 +137,9 @@ while True:
         pass
 
     if op == '4':
-        external_temperature = leitor_temperatura_externa.get_external_temperature()
-        print(external_temperature)
-        log.create_log_entry(external_temperature)
+        outside_temperature = leitor_temperatura_externa.get_external_temperature()
+        print(outside_temperature)
+        log.create_log_entry(outside_temperature)
 
 # resistor.on()
 # sleep(10)

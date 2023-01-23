@@ -42,7 +42,7 @@ def turn_on(oven_is_on_state):
     print("Oven set on")
 
     turn_on_code = b'\x01\x23\xd3'
-    communicator.send_code(turn_on_code, b'\xA1', 8)
+    communicator.send_code(turn_on_code, b'\x01', 8)
     data_received = communicator.message_receiver()
     received_int = int.from_bytes(data_received, 'little')
     print(received_int)
@@ -53,7 +53,7 @@ def turn_off(oven_is_on_state):
     print("Oven set off")
 
     turn_off_code = b'\x01\x23\xd3'
-    communicator.send_code(turn_off_code, b'\xA2', 8)
+    communicator.send_code(turn_off_code, b'\x00', 8)
     data_received = communicator.message_receiver()
     received_int = int.from_bytes(data_received, 'little')
     print(received_int)

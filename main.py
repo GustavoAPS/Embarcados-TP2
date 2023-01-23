@@ -22,9 +22,7 @@ temperature_controller = temperature_control.TemperatureControlModule()
 
 
 def turn_on():
-
     print("Oven set on")
-
     turn_on_code = b'\x01\x23\xd3'
     communicator.send_code(turn_on_code, b'\x01', 8)
     data_received = communicator.message_receiver()
@@ -33,9 +31,7 @@ def turn_on():
 
 
 def turn_off():
-
     print("Oven set off")
-
     turn_off_code = b'\x01\x23\xd3'
     communicator.send_code(turn_off_code, b'\x00', 8)
     data_received = communicator.message_receiver()
@@ -44,11 +40,21 @@ def turn_off():
 
 
 def start_work():
-    pass
+    print("Oven started working")
+    turn_on_code = b'\x01\x16\xd5'
+    communicator.send_code(turn_on_code, b'\x01', 8)
+    data_received = communicator.message_receiver()
+    received_int = int.from_bytes(data_received, 'little')
+    print(received_int)
 
 
 def stop_work():
-    pass
+    print("Oven stop working")
+    turn_on_code = b'\x01\x16\xd5'
+    communicator.send_code(turn_on_code, b'\x01', 8)
+    data_received = communicator.message_receiver()
+    received_int = int.from_bytes(data_received, 'little')
+    print(received_int)
 
 
 def watch_for_buttons(oven):
@@ -70,8 +76,12 @@ def watch_for_buttons(oven):
             oven.on = False
         elif button == 163:
             print("[3] pressed")
+            oven.working = True
+            start_work()
         elif button == 164:
             print("[4] pressed")
+            oven.working = False
+            stop_work()
 
     time.sleep(0.5)
 

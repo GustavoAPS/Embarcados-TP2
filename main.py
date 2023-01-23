@@ -110,10 +110,13 @@ def system_update_routine():
         print(pid_result)
 
         if oven.on:
-
             if pid_result > 0:
-                temperature_controller.cool_the_oven(pid_result)
+                temperature_controller.heat_the_oven(pid_result)
+                temperature_controller.cool_the_oven(0)
             else:
+                pid_result = pid_result * -1
+                if pid_result < 40:
+                    pid_result = 40
                 temperature_controller.heat_the_oven(pid_result)
 
 

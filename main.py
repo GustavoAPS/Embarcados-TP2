@@ -11,12 +11,14 @@ import log_manager
 import uart_communicator
 import reflow_oven
 import pid_control
+import temperature_control
 
 # IMPORTED OBJECTS
 pid = pid_control.PID()
 leitor_temperatura_externa = temperatura.LeitorTemperaturaExterna()
 log = log_manager.LogManager()
 communicator = uart_communicator.UartCommunicator()
+temperature_controller = temperature_control.TemperatureControlModule()
 
 
 def turn_on():
@@ -103,7 +105,16 @@ def system_update_routine():
         watch_for_buttons(oven)
         read_and_update_oven_temperature(oven)
         watch_for_buttons(oven)
-        print(pid.output(oven.oven_temperature_target, oven.internal_temperature))
+
+        pid_result = pid.output(oven.oven_temperature_target, oven.internal_temperature)
+        print(pid_result)
+
+        if oven.on:
+
+            if pid_result > 0:
+                temperature_controller.cool_the_oven(pid_result)
+            else:
+                temperature_controller.heat_the_oven(pid_result)
 
 
 system_routine_thread = Thread(target=system_update_routine, args=())

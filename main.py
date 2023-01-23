@@ -3,7 +3,7 @@
 # PYTHON LIBRARIES
 import time
 import struct
-from threading import Thread
+from threading import Thread, Event
 
 # CUSTOM LIBRARIES
 import temperatura
@@ -57,6 +57,17 @@ def stop_work():
     print(received_int)
 
 
+def send_control_signal(signal_intensity):
+    sending_block = Event()
+    send_control_signal_code = b'\x01\x23\xd1'
+    valor = (round(signal_intensity)).to_bytes(4, 'little', signed=True)
+
+    communicator.send_code(send_control_signal_code, valor, 11)
+    data_received = communicator.message_receiver()
+
+    sending_block.clear()
+
+
 def watch_for_buttons(oven):
 
     request_buttons_code = b'\x01\x23\xc3'
@@ -87,7 +98,6 @@ def watch_for_buttons(oven):
 
 
 def read_and_update_temperature_target(oven):
-
     request_temperature_target_code = b'\x01\x23\xc2'
     communicator.send_code(request_temperature_target_code)
     data_received = communicator.message_receiver()
@@ -97,7 +107,6 @@ def read_and_update_temperature_target(oven):
 
 
 def read_and_update_oven_temperature(oven):
-
     request_oven_temperature_code = b'\x01\x23\xc1'
     communicator.send_code(request_oven_temperature_code)
     data_received = communicator.message_receiver()
@@ -128,6 +137,8 @@ def system_update_routine():
                 if pid_result < 40:
                     pid_result = 40
                 temperature_controller.heat_the_oven(pid_result)
+
+            send_control_signal(pid_result)
 
 
 system_routine_thread = Thread(target=system_update_routine, args=())

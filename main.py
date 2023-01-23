@@ -82,6 +82,9 @@ def watch_for_buttons(oven):
         elif button == 162:
             print("[2] pressed")
             oven.on = False
+            turn_off()
+            oven.working = False
+            stop_work()
         elif button == 163:
             print("[3] pressed")
             oven.working = True
@@ -123,12 +126,13 @@ def system_update_routine():
         read_and_update_oven_temperature(oven)
         watch_for_buttons(oven)
 
-        pid_result = pid.output(oven.oven_temperature_target, oven.internal_temperature)
-        print(pid_result)
-
-        send_control_signal(pid_result)
-
         if oven.on and oven.working:
+
+            pid_result = pid.output(oven.oven_temperature_target, oven.internal_temperature)
+            print(pid_result)
+
+            send_control_signal(pid_result)
+
             if pid_result > 0:
                 temperature_controller.heat_the_oven(pid_result)
                 temperature_controller.cool_the_oven(0)

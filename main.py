@@ -141,7 +141,8 @@ def system_update_routine():
                 pid_result = pid_result * -1
                 if pid_result < 40:
                     pid_result = 40
-                temperature_controller.heat_the_oven(pid_result)
+                temperature_controller.cool_the_oven(pid_result)
+                temperature_controller.heat_the_oven(0)
 
         log.create_log_entry(leitor_temperatura_externa.get_external_temperature(), oven.internal_temperature, oven.oven_temperature_target, pid_result)
 

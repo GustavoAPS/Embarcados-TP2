@@ -41,7 +41,7 @@ def turn_off():
 
 def start_work():
     print("Oven started working")
-    turn_on_code = b'\x01\x16\xd5'
+    turn_on_code = b'\x01\x23\xd5'
     communicator.send_code(turn_on_code, b'\x01', 8)
     data_received = communicator.message_receiver()
     received_int = int.from_bytes(data_received, 'little')
@@ -50,7 +50,7 @@ def start_work():
 
 def stop_work():
     print("Oven stop working")
-    turn_on_code = b'\x01\x16\xd5'
+    turn_on_code = b'\x01\x23\xd5'
     communicator.send_code(turn_on_code, b'\x01', 8)
     data_received = communicator.message_receiver()
     received_int = int.from_bytes(data_received, 'little')
@@ -117,6 +117,7 @@ def system_update_routine():
     oven = reflow_oven.ReflowOven()
 
     while True:
+
         read_and_update_temperature_target(oven)
         watch_for_buttons(oven)
         read_and_update_oven_temperature(oven)
@@ -127,7 +128,7 @@ def system_update_routine():
 
         send_control_signal(pid_result)
 
-        if oven.on:
+        if oven.on and oven.working:
             if pid_result > 0:
                 temperature_controller.heat_the_oven(pid_result)
                 temperature_controller.cool_the_oven(0)

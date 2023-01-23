@@ -8,7 +8,7 @@ LOG_FILE_PATH = 'log.csv'
 def create_log_file():
     with open(LOG_FILE_PATH, 'w', encoding='UTF8') as log_file:
         file_writer = writer(log_file)
-        data = ["Data", "Hora", "Temperatura Ambiente"]
+        data = ["Data", "Hora", "Temperatura Ambiente", "Temperatura Interna", "temperatura alvo", "Sinal PID"]
         file_writer.writerow(data)
 
 
@@ -17,15 +17,15 @@ class LogManager:
         if not exists(LOG_FILE_PATH):
             create_log_file()
 
-    def create_log_entry(self, ambient_temperature):
+    def create_log_entry(self, ambient_temperature, oven_temperature, target_temperature, pid_signal):
 
         now = datetime.now()
         log_date = now.strftime("%d/%m/%Y")
         log_time = now.strftime("%H:%M:%S")
 
-        List = [log_date, log_time, ambient_temperature]
+        values_list = [log_date, log_time, ambient_temperature, oven_temperature, target_temperature, pid_signal]
 
         with open(LOG_FILE_PATH, 'a') as f_object:
             writer_object = writer(f_object)
-            writer_object.writerow(List)
+            writer_object.writerow(values_list)
             f_object.close()

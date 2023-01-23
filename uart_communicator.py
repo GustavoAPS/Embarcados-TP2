@@ -41,6 +41,6 @@ class UartCommunicator:
                 print('CRC16 invalido')
                 return None
         else:
-            print('Mensagem recebida: {}'.format(buffer))
-            print('Mensagem no formato incorreto, tamanho: {}'.format(buffer_size))
+            # print('Mensagem recebida: {}'.format(buffer))
+            # print('Mensagem no formato incorreto, tamanho: {}'.format(buffer_size))
             return None

@@ -125,10 +125,11 @@ def system_update_routine():
         watch_for_buttons(oven)
         read_and_update_oven_temperature(oven)
         watch_for_buttons(oven)
+        pid_result = pid.output(oven.oven_temperature_target, oven.internal_temperature)
 
         if oven.on and oven.working:
 
-            pid_result = pid.output(oven.oven_temperature_target, oven.internal_temperature)
+
             print(pid_result)
 
             send_control_signal(pid_result)
@@ -141,6 +142,8 @@ def system_update_routine():
                 if pid_result < 40:
                     pid_result = 40
                 temperature_controller.heat_the_oven(pid_result)
+
+        log.create_log_entry(leitor_temperatura_externa.get_external_temperature(), oven.internal_temperature, oven.oven_temperature_target, pid_result)
 
 
 system_routine_thread = Thread(target=system_update_routine, args=())

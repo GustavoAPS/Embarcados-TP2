@@ -58,7 +58,8 @@ def stop_work():
 
 
 def send_control_signal(signal_intensity):
-    send_control_signal_code = b'\x01\x16\xd1'
+
+    send_control_signal_code = b'\x01\x23\xd1'
     valor = (round(signal_intensity)).to_bytes(4, 'little', signed=True)
     communicator.send_code(send_control_signal_code, valor, 11)
     data_received = communicator.message_receiver()
@@ -124,6 +125,8 @@ def system_update_routine():
         pid_result = pid.output(oven.oven_temperature_target, oven.internal_temperature)
         print(pid_result)
 
+        send_control_signal(pid_result)
+
         if oven.on:
             if pid_result > 0:
                 temperature_controller.heat_the_oven(pid_result)
@@ -133,8 +136,6 @@ def system_update_routine():
                 if pid_result < 40:
                     pid_result = 40
                 temperature_controller.heat_the_oven(pid_result)
-
-            send_control_signal(pid_result)
 
 
 system_routine_thread = Thread(target=system_update_routine, args=())
